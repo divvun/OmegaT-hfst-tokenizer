@@ -18,6 +18,7 @@ import org.omegat.tokenizer.BaseTokenizer;
 import org.omegat.tokenizer.ITokenizer.StemmingMode;
 import org.omegat.tokenizer.Tokenizer;
 import org.omegat.util.Language;
+import org.omegat.util.Preferences;
 import net.sf.hfst.Transducer;
 import net.sf.hfst.TransducerHeader;
 import net.sf.hfst.TransducerAlphabet;
@@ -87,7 +88,7 @@ public class HfstTokenizer extends BaseTokenizer {
   private static void populateInstalledTransducers() {
     analysers = new HashMap<Language, File>();
 
-    String dictionaryDirPath = "/usr/local/share/giella";
+    String dictionaryDirPath = Preferences.getPreference(Preferences.SPELLCHECKER_DICTIONARY_DIRECTORY);
     if (dictionaryDirPath.isEmpty()) {
         return;
     }
