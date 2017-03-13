@@ -87,7 +87,7 @@ public class HfstTokenizer extends BaseTokenizer {
   private static void populateInstalledTransducers() {
     analysers = new HashMap<Language, File>();
 
-    String dictionaryDirPath = "~/Library/Preferences/OmegaT/spelling";
+    String dictionaryDirPath = "/usr/local/share/giella";
     if (dictionaryDirPath.isEmpty()) {
         return;
     }
