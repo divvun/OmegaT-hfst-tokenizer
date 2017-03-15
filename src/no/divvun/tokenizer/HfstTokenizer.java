@@ -59,9 +59,9 @@ public class HfstTokenizer extends BaseTokenizer {
 
   @Override
   protected TokenStream getTokenStream(final String strOrig, final boolean stemsAllowed,
-          final boolean stopWordsAllowed) throws IOException {
-    StandardTokenizer tokenizer = new StandardTokenizer();
-    tokenizer.setReader(new StringReader(strOrig));
+          final boolean stopWordsAllowed) {
+    StandardTokenizer tokenizer = new StandardTokenizer(getBehavior(), new StringReader(strOrig));
+    //tokenizer.setReader(new StringReader(strOrig));
 
     if (stemsAllowed) {
       Transducer transducer = getTransducer();

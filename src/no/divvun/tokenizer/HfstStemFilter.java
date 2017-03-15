@@ -45,12 +45,12 @@ public final class HfstStemFilter extends TokenFilter {
     try {
       Collection<String> res = new ArrayList<String>(stemmer.analyze(termAtt.toString()));
       List<String> stems = new ArrayList<String>();
-      res.forEach(anal -> {
-        String stem = anal.substring(0, anal.indexOf("+"));
+      for (String s : res) {
+        String stem = s.substring(0, s.indexOf("+"));
         if (!stems.contains(stem)) {
           stems.add(stem);
         }
-      });
+      }
       buffer = stems;
     } catch (NoTokenizationException ex) {
       System.out.println("NoTokenizationException");

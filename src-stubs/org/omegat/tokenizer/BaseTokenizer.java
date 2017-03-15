@@ -30,6 +30,7 @@ import java.io.IOException;
 import org.omegat.util.Language;
 import org.omegat.util.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.util.Version;
 /**
  * Base class for Lucene-based tokenizers.
  * 
@@ -52,5 +53,7 @@ public abstract class BaseTokenizer implements ITokenizer {
     public String[] getSupportedLanguages() { return null; }
     
     protected Language getLanguage() { return null; }
+    
+    public Version getBehavior() { return null; }
 
 }
