@@ -19,12 +19,12 @@ import org.omegat.tokenizer.ITokenizer.StemmingMode;
 import org.omegat.tokenizer.Tokenizer;
 import org.omegat.util.Language;
 import org.omegat.util.Preferences;
-import net.sf.hfst.Transducer;
-import net.sf.hfst.TransducerHeader;
-import net.sf.hfst.TransducerAlphabet;
-import net.sf.hfst.UnweightedTransducer;
-import net.sf.hfst.WeightedTransducer;
-import net.sf.hfst.NoTokenizationException;
+import fi.seco.hfst.Transducer;
+import fi.seco.hfst.TransducerHeader;
+import fi.seco.hfst.TransducerAlphabet;
+import fi.seco.hfst.UnweightedTransducer;
+import fi.seco.hfst.WeightedTransducer;
+// import fi.seco.hfst.NoTokenizationException;
 
 
 @Tokenizer(languages = { Tokenizer.DISCOVER_AT_RUNTIME })
@@ -59,9 +59,10 @@ public class HfstTokenizer extends BaseTokenizer {
 
   @Override
   protected TokenStream getTokenStream(final String strOrig, final boolean stemsAllowed,
-          final boolean stopWordsAllowed) {
-    StandardTokenizer tokenizer = new StandardTokenizer(getBehavior(), new StringReader(strOrig));
-    //tokenizer.setReader(new StringReader(strOrig));
+          final boolean stopWordsAllowed) throws IOException {
+    //StandardTokenizer tokenizer = new StandardTokenizer(getBehavior(), new StringReader(strOrig));
+    StandardTokenizer tokenizer = new StandardTokenizer();
+    tokenizer.setReader(new StringReader(strOrig));
 
     if (stemsAllowed) {
       Transducer transducer = getTransducer();
@@ -111,15 +112,15 @@ public class HfstTokenizer extends BaseTokenizer {
   private Transducer loadTransducer(FileInputStream transducerfile)
         throws java.io.FileNotFoundException, java.io.IOException {
 
-    TransducerHeader h = new TransducerHeader(transducerfile);
     DataInputStream charstream = new DataInputStream(transducerfile);
+    TransducerHeader h = new TransducerHeader(charstream);
     TransducerAlphabet a = new TransducerAlphabet(charstream, h.getSymbolCount());
 
     if (h.isWeighted()) {
-      return new WeightedTransducer(transducerfile, h, a);
+      return new WeightedTransducer(charstream, h, a);
     }
     else {
-      return new UnweightedTransducer(transducerfile, h, a);
+      return new UnweightedTransducer(charstream, h, a);
     }
   }
 

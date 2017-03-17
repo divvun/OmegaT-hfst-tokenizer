@@ -10,15 +10,16 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource.State;
-
-import net.sf.hfst.Transducer;
-import net.sf.hfst.NoTokenizationException;
+        
+import fi.seco.hfst.Transducer;
+import fi.seco.hfst.Transducer.Result;
+// import fi.seco.hfst.NoTokenizationException;
 
 
 public final class HfstStemFilter extends TokenFilter {
   private final CharTermAttribute termAtt = addAttribute(CharTermAttribute.class);
   private final PositionIncrementAttribute posIncAtt = addAttribute(PositionIncrementAttribute.class);
-  private Transducer stemmer;
+  private final Transducer stemmer;
   private List<String> buffer;
   private State savedState;
 
@@ -43,16 +44,19 @@ public final class HfstStemFilter extends TokenFilter {
     }
 
     try {
-      Collection<String> res = new ArrayList<String>(stemmer.analyze(termAtt.toString()));
+      Collection<Result> res = stemmer.analyze(termAtt.toString());
       List<String> stems = new ArrayList<String>();
-      for (String s : res) {
-        String stem = s.substring(0, s.indexOf("+"));
+      // res.forEach(s -> {
+      for (Result s : res) {
+        String stem = s.toString().replaceAll("[,#\\[\\] ]", "").replaceAll("\\+.+","");
+        // String stem = analysis.substring(0, analysis.indexOf("+"));
         if (!stems.contains(stem)) {
+          // System.out.println("Hfst: Stem: " + stem);
           stems.add(stem);
         }
       }
       buffer = stems;
-    } catch (NoTokenizationException ex) {
+    } catch (Exception ex) {
       System.out.println("NoTokenizationException");
     }
 
