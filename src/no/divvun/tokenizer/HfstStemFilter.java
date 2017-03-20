@@ -10,7 +10,7 @@ import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
 import org.apache.lucene.util.AttributeSource.State;
-        
+
 import fi.seco.hfst.Transducer;
 import fi.seco.hfst.Transducer.Result;
 // import fi.seco.hfst.NoTokenizationException;
@@ -48,7 +48,8 @@ public final class HfstStemFilter extends TokenFilter {
       List<String> stems = new ArrayList<String>();
       // res.forEach(s -> {
       for (Result s : res) {
-        String stem = s.toString().replaceAll("[,#\\[\\] ]", "").replaceAll("\\+.+","");
+        if (s.toString().contains("+Cmp")) continue;
+        String stem = s.toString().replaceAll("[,#\\[\\] ]", "").replaceAll("\\+[^+]+","");
         // String stem = analysis.substring(0, analysis.indexOf("+"));
         if (!stems.contains(stem)) {
           // System.out.println("Hfst: Stem: " + stem);

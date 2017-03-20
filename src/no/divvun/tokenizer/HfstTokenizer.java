@@ -14,6 +14,8 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
+import org.omegat.core.Core;
+import org.omegat.core.data.IProject;
 import org.omegat.tokenizer.BaseTokenizer;
 import org.omegat.tokenizer.ITokenizer.StemmingMode;
 import org.omegat.tokenizer.Tokenizer;
@@ -43,7 +45,7 @@ public class HfstTokenizer extends BaseTokenizer {
       populateInstalledTransducers();
     }
 
-    Language language = getLanguage();
+    Language language = getProjectLanguage();
     File transducerFile = analysers.get(language);
 
     try {
@@ -51,18 +53,30 @@ public class HfstTokenizer extends BaseTokenizer {
       return transducer;
     }
     catch (Exception fe) {
-      // nothing
+
     }
 
     return null;
   }
 
+  private Language getProjectLanguage() {
+    IProject proj = Core.getProject();
+    Language lang = new Language(Tokenizer.DISCOVER_AT_RUNTIME);
+    if (proj.getSourceTokenizer() == this) {
+        lang = proj.getProjectProperties().getSourceLanguage();
+    } else if (proj.getTargetTokenizer() == this) {
+        lang = proj.getProjectProperties().getTargetLanguage();
+    }
+    return lang;
+  }
+
   @Override
   protected TokenStream getTokenStream(final String strOrig, final boolean stemsAllowed,
           final boolean stopWordsAllowed) throws IOException {
-    //StandardTokenizer tokenizer = new StandardTokenizer(getBehavior(), new StringReader(strOrig));
-    StandardTokenizer tokenizer = new StandardTokenizer();
-    tokenizer.setReader(new StringReader(strOrig));
+    StandardTokenizer tokenizer = new StandardTokenizer(getBehavior(), new StringReader(strOrig));
+
+    //StandardTokenizer tokenizer = new StandardTokenizer();
+    //tokenizer.setReader(new StringReader(strOrig));
 
     if (stemsAllowed) {
       Transducer transducer = getTransducer();
@@ -76,15 +90,15 @@ public class HfstTokenizer extends BaseTokenizer {
     }
   }
 
-  @Override
-  public String[] getSupportedLanguages() {
-
-      populateInstalledTransducers();
-
-      Set<Language> commonLangs = analysers.keySet();
-
-      return langsToStrings(commonLangs);
-  }
+  // @Override
+  // public String[] getSupportedLanguages() {
+  //
+  //     populateInstalledTransducers();
+  //
+  //     Set<Language> commonLangs = analysers.keySet();
+  //
+  //     return langsToStrings(commonLangs);
+  // }
 
   private static void populateInstalledTransducers() {
     analysers = new HashMap<Language, File>();
@@ -124,12 +138,12 @@ public class HfstTokenizer extends BaseTokenizer {
     }
   }
 
-  private static String[] langsToStrings(Set<Language> langs) {
-    List<String> result = new ArrayList<String>();
-    for (Language lang : langs) {
-      result.add(lang.getLanguage().toLowerCase());
-      result.add(lang.getLanguageCode().toLowerCase());
-    }
-    return result.toArray(new String[result.size()]);
-  }
+  // private static String[] langsToStrings(Set<Language> langs) {
+  //   List<String> result = new ArrayList<String>();
+  //   for (Language lang : langs) {
+  //     result.add(lang.getLanguage().toLowerCase());
+  //     result.add(lang.getLanguageCode().toLowerCase());
+  //   }
+  //   return result.toArray(new String[result.size()]);
+  // }
 }
