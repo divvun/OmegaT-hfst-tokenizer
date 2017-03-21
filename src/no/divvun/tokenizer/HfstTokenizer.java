@@ -14,12 +14,14 @@ import java.util.Set;
 
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardTokenizer;
+import org.apache.lucene.util.Version;
 import org.omegat.core.Core;
 import org.omegat.core.data.IProject;
 import org.omegat.tokenizer.BaseTokenizer;
 import org.omegat.tokenizer.ITokenizer.StemmingMode;
 import org.omegat.tokenizer.Tokenizer;
 import org.omegat.util.Language;
+import org.omegat.util.Log;
 import org.omegat.util.Preferences;
 import fi.seco.hfst.Transducer;
 import fi.seco.hfst.TransducerHeader;
@@ -73,8 +75,13 @@ public class HfstTokenizer extends BaseTokenizer {
   @Override
   protected TokenStream getTokenStream(final String strOrig, final boolean stemsAllowed,
           final boolean stopWordsAllowed) throws IOException {
-    StandardTokenizer tokenizer = new StandardTokenizer(getBehavior(), new StringReader(strOrig));
-
+    
+    StandardTokenizer tokenizer = loadTokenizer(strOrig);
+    
+    // Lucene 4.x
+    //StandardTokenizer tokenizer = new StandardTokenizer(getBehavior(), new StringReader(strOrig));
+    
+    // Lucene 5.x
     //StandardTokenizer tokenizer = new StandardTokenizer();
     //tokenizer.setReader(new StringReader(strOrig));
 
@@ -89,16 +96,45 @@ public class HfstTokenizer extends BaseTokenizer {
       return tokenizer;
     }
   }
+  
+  private StandardTokenizer loadTokenizer(String strOrig) {
+    java.lang.reflect.Method m = null;
+    StringReader sr = new StringReader(strOrig);
+    try {
+      m = BaseTokenizer.class.getMethod("getBehavior", (Class<?>[]) null);
+    }
+    catch (NoSuchMethodException nsme) {
+      try {
+        java.lang.reflect.Constructor ctor = StandardTokenizer.class.getConstructor();
+        StandardTokenizer t = (StandardTokenizer) ctor.newInstance();
+        
+        for (java.lang.reflect.Method method : t.getClass().getMethods()) {
+          if ("setReader".equals(method.getName())) {
+            method.invoke(t, sr);
+          }
+        }
+        
+        return t;
+      }
+      catch (Exception ex) {
+        Log.log(ex);
+      }
+    }
 
-  // @Override
-  // public String[] getSupportedLanguages() {
-  //
-  //     populateInstalledTransducers();
-  //
-  //     Set<Language> commonLangs = analysers.keySet();
-  //
-  //     return langsToStrings(commonLangs);
-  // }
+    catch (SecurityException e) {
+      return null;
+    }
+
+    try {
+      java.lang.reflect.Constructor ctor = StandardTokenizer.class.getConstructor(Version.class, StringReader.class);
+      return (StandardTokenizer) ctor.newInstance(m.invoke(this, (Object[]) null), sr);
+    }
+    catch (Exception e) {
+      System.out.println("Ex: " + e);
+    }
+
+    return null;
+  }
 
   private static void populateInstalledTransducers() {
     analysers = new HashMap<Language, File>();
@@ -137,13 +173,4 @@ public class HfstTokenizer extends BaseTokenizer {
       return new UnweightedTransducer(charstream, h, a);
     }
   }
-
-  // private static String[] langsToStrings(Set<Language> langs) {
-  //   List<String> result = new ArrayList<String>();
-  //   for (Language lang : langs) {
-  //     result.add(lang.getLanguage().toLowerCase());
-  //     result.add(lang.getLanguageCode().toLowerCase());
-  //   }
-  //   return result.toArray(new String[result.size()]);
-  // }
 }
