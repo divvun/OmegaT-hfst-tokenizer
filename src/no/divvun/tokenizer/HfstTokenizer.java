@@ -100,10 +100,15 @@ public class HfstTokenizer extends BaseTokenizer {
   private StandardTokenizer loadTokenizer(String strOrig) {
     java.lang.reflect.Method m = null;
     StringReader sr = new StringReader(strOrig);
-    try {
-      m = BaseTokenizer.class.getMethod("getBehavior", (Class<?>[]) null);
+
+//    m = BaseTokenizer.class.getMethod("getBehavior", (Class<?>[]) null);
+    for (java.lang.reflect.Method method : BaseTokenizer.class.getMethods()) {
+      if ("getBehavior".equals(method.getName())) {
+        m = method;
+      }
     }
-    catch (NoSuchMethodException nsme) {
+
+    if (m == null) {
       try {
         java.lang.reflect.Constructor ctor = StandardTokenizer.class.getConstructor();
         StandardTokenizer t = (StandardTokenizer) ctor.newInstance();
@@ -120,17 +125,15 @@ public class HfstTokenizer extends BaseTokenizer {
         Log.log(ex);
       }
     }
-
-    catch (SecurityException e) {
-      return null;
-    }
-
-    try {
-      java.lang.reflect.Constructor ctor = StandardTokenizer.class.getConstructor(Version.class, StringReader.class);
-      return (StandardTokenizer) ctor.newInstance(m.invoke(this, (Object[]) null), sr);
-    }
-    catch (Exception e) {
-      System.out.println("Ex: " + e);
+    else {
+      try {
+        java.lang.reflect.Constructor ctor = StandardTokenizer.class.getConstructor(Version.class, java.io.Reader.class);
+        Version v = (Version)m.invoke(this, (Object[]) null);
+        return (StandardTokenizer) ctor.newInstance(v, sr);
+      }
+      catch (Exception ex) {
+        Log.log(ex);
+      }
     }
 
     return null;
