@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.omegat.util;
+package org.omegat.gui.main;
 
 /**
  *
  * @author tomi
  */
-public class Log {
-  public static void log(Throwable throwable) { }
-  public static void log(String str) { }
+public interface IMainWindow {
+  IMainMenu getMainMenu();
 }
