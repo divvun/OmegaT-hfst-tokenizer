@@ -150,6 +150,9 @@ public class HfstTokenizer extends BaseTokenizer {
     if (lang.equals("se")) {
       lang = "sme";
     }
+    else if (lang.equals("nb")) {
+      lang = "nob";
+    }
 
     //String dictionaryDirPath = Preferences.getPreference(Preferences.SPELLCHECKER_DICTIONARY_DIRECTORY);
     String dictionaryDirPath = settings.get("root", "");
