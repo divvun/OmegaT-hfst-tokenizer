@@ -33,10 +33,15 @@ import fi.seco.hfst.WeightedTransducer;
 
 @Tokenizer(languages = { Tokenizer.DISCOVER_AT_RUNTIME })
 public class HfstTokenizer extends BaseTokenizer {
-
+  public static final java.util.prefs.Preferences settings = java.util.prefs.Preferences.userNodeForPackage(HfstTokenizer.class);
+  public static final String BTYPE = "nightly";
   private static Map<Language, File> analysers;
 
   private Transducer transducer;
+  
+  public HfstTokenizer() {
+    HfstMenuItem item = new HfstMenuItem();
+  }
 
   private Transducer getTransducer() {
     if (transducer != null) {
@@ -55,7 +60,7 @@ public class HfstTokenizer extends BaseTokenizer {
       return transducer;
     }
     catch (Exception fe) {
-
+      //Log.log(fe);
     }
 
     return null;
@@ -101,7 +106,6 @@ public class HfstTokenizer extends BaseTokenizer {
     java.lang.reflect.Method m = null;
     StringReader sr = new StringReader(strOrig);
 
-//    m = BaseTokenizer.class.getMethod("getBehavior", (Class<?>[]) null);
     for (java.lang.reflect.Method method : BaseTokenizer.class.getMethods()) {
       if ("getBehavior".equals(method.getName())) {
         m = method;
@@ -139,25 +143,35 @@ public class HfstTokenizer extends BaseTokenizer {
     return null;
   }
 
-  private static void populateInstalledTransducers() {
+  private void populateInstalledTransducers() {
     analysers = new HashMap<Language, File>();
+    String lang = getProjectLanguage().toString().toLowerCase();
+    
+    if (lang.equals("se")) {
+      lang = "sme";
+    }
 
-    String dictionaryDirPath = Preferences.getPreference(Preferences.SPELLCHECKER_DICTIONARY_DIRECTORY);
+    //String dictionaryDirPath = Preferences.getPreference(Preferences.SPELLCHECKER_DICTIONARY_DIRECTORY);
+    String dictionaryDirPath = settings.get("root", "");
+    Log.log(dictionaryDirPath);
     if (dictionaryDirPath.isEmpty()) {
         return;
     }
 
-    File dictionaryDir = new File(dictionaryDirPath);
+    File dictionaryDir = new File(dictionaryDirPath, BTYPE + "/usr/share/giella/" + lang);
+    Log.log(dictionaryDir.getAbsolutePath());
     if (!dictionaryDir.isDirectory()) {
         return;
     }
 
     for (File file : dictionaryDir.listFiles()) {
       String name = file.getName();
-
-      if (name.endsWith(".hfstol")) {
-        Language lang = new Language(name.substring(name.lastIndexOf("-") +1, name.lastIndexOf(".")));
-        analysers.put(lang, file);
+      
+      if (name.equals("analyser-gt-norm.hfstol")) {
+        //Language lang = new Language(name.substring(name.lastIndexOf("-") +1, name.lastIndexOf(".")));
+        //Language lang = getProjectLanguage();
+        Log.log(name);
+        analysers.put(getProjectLanguage(), file);
       }
     }
   }
